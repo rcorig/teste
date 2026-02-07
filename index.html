@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rush to the Toilet!</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background: #1a1a2e;
@@ -18,14 +14,10 @@
             align-items: center;
             min-height: 100vh;
             font-family: 'Courier New', monospace;
-            overflow: hidden;
         }
 
         #gameWrapper {
             position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
         #hud {
@@ -42,35 +34,20 @@
             font-size: 16px;
         }
 
-        #hud .timer {
-            color: #e94560;
-            font-weight: bold;
-            font-size: 20px;
+        .timer { color: #e94560; font-weight: bold; font-size: 20px; }
+        .level-indicator { font-size: 14px; color: #4ecca3; }
+
+        .urgency-bar {
+            width: 200px; height: 16px;
+            background: #333; border-radius: 8px;
+            overflow: hidden; border: 1px solid #555;
         }
 
-        #hud .timer.critical {
-            animation: blink 0.3s infinite alternate;
-        }
-
-        @keyframes blink {
-            from { opacity: 1; }
-            to { opacity: 0.3; }
-        }
-
-        #hud .urgency-bar {
-            width: 200px;
-            height: 16px;
-            background: #333;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #555;
-        }
-
-        #hud .urgency-fill {
+        .urgency-fill {
             height: 100%;
             background: linear-gradient(90deg, #4ecca3, #e9d962, #e94560);
-            transition: width 0.3s;
             border-radius: 8px;
+            width: 0%;
         }
 
         canvas {
@@ -79,12 +56,19 @@
             background: #0f3460;
         }
 
+        #controls {
+            width: 600px; padding: 8px;
+            background: #16213e;
+            border: 2px solid #e94560;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            color: #888; font-size: 12px;
+            text-align: center;
+        }
+
         #overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 604px;
-            height: 100%;
+            top: 0; left: 0; right: 0; bottom: 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -94,96 +78,40 @@
             border-radius: 10px;
         }
 
-        #overlay.hidden {
-            display: none;
-        }
+        #overlay.hidden { display: none; }
 
-        #overlay h1 {
-            font-size: 36px;
-            color: #e94560;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        #overlay h2 {
-            font-size: 22px;
-            color: #e9d962;
-            margin-bottom: 20px;
-            text-align: center;
-        }
+        #overlay h1 { font-size: 36px; color: #e94560; margin-bottom: 10px; text-align: center; }
+        #overlay h2 { font-size: 22px; color: #e9d962; margin-bottom: 20px; text-align: center; }
 
         #overlay .subtitle {
-            font-size: 14px;
-            color: #aaa;
-            margin-bottom: 30px;
-            text-align: center;
-            max-width: 400px;
-            line-height: 1.5;
+            font-size: 14px; color: #aaa;
+            margin-bottom: 30px; text-align: center;
+            max-width: 400px; line-height: 1.5;
         }
 
-        #overlay .score-display {
-            font-size: 18px;
-            color: #4ecca3;
-            margin-bottom: 20px;
-        }
+        #overlay .score-display { font-size: 18px; color: #4ecca3; margin-bottom: 20px; }
 
         #overlay button {
-            padding: 12px 40px;
-            font-size: 18px;
+            padding: 12px 40px; font-size: 18px;
             font-family: 'Courier New', monospace;
-            background: #e94560;
-            color: white;
-            border: none;
-            border-radius: 8px;
+            background: #e94560; color: white;
+            border: none; border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s;
-            margin: 5px;
         }
 
-        #overlay button:hover {
-            background: #c73650;
-            transform: scale(1.05);
-        }
-
-        #controls {
-            width: 600px;
-            padding: 8px;
-            background: #16213e;
-            border: 2px solid #e94560;
-            border-top: none;
-            border-radius: 0 0 10px 10px;
-            color: #888;
-            font-size: 12px;
-            text-align: center;
-        }
-
-        .level-indicator {
-            font-size: 14px;
-            color: #4ecca3;
-        }
+        #overlay button:hover { background: #c73650; }
     </style>
 </head>
 <body>
     <div id="gameWrapper">
         <div id="hud">
-            <div>
-                <span class="level-indicator">Level: <span id="levelDisplay">1</span></span>
-            </div>
-            <div>
-                <span>Time: </span>
-                <span id="timerDisplay" class="timer">30s</span>
-            </div>
-            <div class="urgency-bar">
-                <div id="urgencyFill" class="urgency-fill" style="width: 0%"></div>
-            </div>
-            <div>
-                Score: <span id="scoreDisplay">0</span>
-            </div>
+            <div><span class="level-indicator">Level: <span id="levelDisplay">1</span></span></div>
+            <div><span>Time: </span><span id="timerDisplay" class="timer">30s</span></div>
+            <div class="urgency-bar"><div id="urgencyFill" class="urgency-fill"></div></div>
+            <div>Score: <span id="scoreDisplay">0</span></div>
         </div>
         <canvas id="gameCanvas" width="600" height="600"></canvas>
-        <div id="controls">
-            Arrow Keys / WASD to move | Dodge the cars | Reach the toilet in time!
-        </div>
+        <div id="controls">Arrow Keys / WASD to move | Dodge the cars | Reach the toilet in time!</div>
 
         <div id="overlay">
             <h1 id="overlayTitle">Rush to the Toilet!</h1>
@@ -193,19 +121,49 @@
                 Cross the busy roads, dodge traffic, and reach the toilet before time runs out!
             </p>
             <div class="score-display" id="overlayScore"></div>
-            <button id="startBtn">START</button>
+            <button id="startBtn" onclick="onStartClick()">START</button>
         </div>
     </div>
 
     <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+    // ===================== SETUP =====================
+    var canvas = document.getElementById('gameCanvas');
+    var ctx = canvas.getContext('2d');
+    var overlay = document.getElementById('overlay');
+    var overlayTitle = document.getElementById('overlayTitle');
+    var overlaySubtitle = document.getElementById('overlaySubtitle');
+    var overlayDesc = document.getElementById('overlayDesc');
+    var overlayScore = document.getElementById('overlayScore');
+    var startBtn = document.getElementById('startBtn');
+    var timerDisplay = document.getElementById('timerDisplay');
+    var urgencyFill = document.getElementById('urgencyFill');
+    var scoreDisplay = document.getElementById('scoreDisplay');
+    var levelDisplay = document.getElementById('levelDisplay');
 
-    // Polyfill for roundRect (not supported in all browsers)
-    function drawRoundRect(x, y, w, h, r) {
-        if (w < 0) { x += w; w = -w; }
-        if (h < 0) { y += h; h = -h; }
-        r = Math.min(r, w / 2, h / 2);
+    var W = 600;
+    var H = 600;
+    var TILE = 50;
+    var COLS = W / TILE;
+    var ROWS = H / TILE;
+
+    var gameState = 'menu';
+    var score = 0;
+    var level = 1;
+    var timeLeft = 30;
+    var timerInterval = null;
+    var animFrame = null;
+    var frameCount = 0;
+    var lanes = [];
+    var particles = [];
+    var keys = {};
+    var moveDelay = 0;
+    var MOVE_COOLDOWN = 8;
+
+    var player = { x: 6, y: 11, desperationLevel: 0 };
+
+    // ===================== HELPERS =====================
+
+    function drawRoundedRect(x, y, w, h, r) {
         ctx.beginPath();
         ctx.moveTo(x + r, y);
         ctx.lineTo(x + w - r, y);
@@ -219,72 +177,60 @@
         ctx.closePath();
     }
 
-    // Polyfill for ellipse (not supported in all browsers)
-    function drawEllipse(cx, cy, rx, ry) {
+    function drawOval(cx, cy, rx, ry) {
         ctx.beginPath();
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.scale(1, ry / rx);
-        ctx.arc(0, 0, rx, 0, Math.PI * 2);
+        ctx.scale(rx, ry);
+        ctx.arc(0, 0, 1, 0, Math.PI * 2);
         ctx.restore();
     }
-    const overlay = document.getElementById('overlay');
-    const overlayTitle = document.getElementById('overlayTitle');
-    const overlaySubtitle = document.getElementById('overlaySubtitle');
-    const overlayDesc = document.getElementById('overlayDesc');
-    const overlayScore = document.getElementById('overlayScore');
-    const startBtn = document.getElementById('startBtn');
-    const timerDisplay = document.getElementById('timerDisplay');
-    const urgencyFill = document.getElementById('urgencyFill');
-    const scoreDisplay = document.getElementById('scoreDisplay');
-    const levelDisplay = document.getElementById('levelDisplay');
 
-    const W = canvas.width;
-    const H = canvas.height;
-    const TILE = 50;
-    const COLS = W / TILE;
-    const ROWS = H / TILE;
+    function getRandomCarColor() {
+        var colors = ['#e94560', '#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff8c00', '#9b59b6', '#1abc9c'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
 
-    // Game state
-    let gameState = 'menu'; // menu, playing, win, lose
-    let score = 0;
-    let level = 1;
-    let timeLeft = 30;
-    let timerInterval = null;
-    let animFrame = null;
-    let frameCount = 0;
+    function shadeColor(color, percent) {
+        var num = parseInt(color.replace('#', ''), 16);
+        var amt = Math.round(2.55 * percent);
+        var R = Math.max(0, Math.min(255, (num >> 16) + amt));
+        var G = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amt));
+        var B = Math.max(0, Math.min(255, (num & 0x0000FF) + amt));
+        return 'rgb(' + R + ',' + G + ',' + B + ')';
+    }
 
-    // Player
-    let player = {
-        x: 6,
-        y: 11,
-        size: TILE - 6,
-        color: '#4ecca3',
-        wiggle: 0,
-        desperationLevel: 0
-    };
+    // ===================== GAME LOGIC =====================
 
-    // Lane definitions
-    let lanes = [];
+    function getLaneConfigs(lvl) {
+        var configs = [];
+        var baseSpeed = 1.2 + (lvl - 1) * 0.3;
 
-    // Particle effects
-    let particles = [];
+        configs.push({ row: 0, type: 'safe', color: '#2d6a4f' });
+        configs.push({ row: 1, type: 'grass', color: '#386641' });
+        configs.push({ row: 2, type: 'road', speed: baseSpeed, direction: 1, spawnRate: 0.008 + lvl * 0.002, carWidth: 2, color: '#333333' });
+        configs.push({ row: 3, type: 'road', speed: baseSpeed + 0.5, direction: -1, spawnRate: 0.01 + lvl * 0.002, carWidth: 1.5, color: '#3a3a3a' });
+        configs.push({ row: 4, type: 'road', speed: baseSpeed + 0.3, direction: 1, spawnRate: 0.009 + lvl * 0.002, carWidth: 2.5, color: '#333333' });
+        configs.push({ row: 5, type: 'safe', color: '#4a5568' });
+        configs.push({ row: 6, type: 'road', speed: baseSpeed + 1, direction: -1, spawnRate: 0.012 + lvl * 0.003, carWidth: 2, color: '#3a3a3a' });
+        configs.push({ row: 7, type: 'road', speed: baseSpeed + 0.8, direction: 1, spawnRate: 0.01 + lvl * 0.002, carWidth: 1.5, color: '#333333' });
+        configs.push({ row: 8, type: 'grass', color: '#386641' });
+        configs.push({ row: 9, type: 'road', speed: baseSpeed + 1.5, direction: -1, spawnRate: 0.015 + lvl * 0.003, carWidth: 2, color: '#3a3a3a' });
+        configs.push({ row: 10, type: 'road', speed: baseSpeed + 0.6, direction: 1, spawnRate: 0.008 + lvl * 0.002, carWidth: 3, color: '#333333' });
+        configs.push({ row: 11, type: 'safe', color: '#4a5568' });
 
-    // Keys pressed
-    const keys = {};
-
-    // Debounce movement
-    let moveDelay = 0;
-    const MOVE_COOLDOWN = 8;
+        return configs;
+    }
 
     function initLevel() {
         lanes = [];
-        const laneConfigs = getLaneConfigs(level);
+        var configs = getLaneConfigs(level);
 
-        for (const config of laneConfigs) {
-            const lane = {
+        for (var i = 0; i < configs.length; i++) {
+            var config = configs[i];
+            var lane = {
                 row: config.row,
-                type: config.type, // 'road', 'safe', 'grass'
+                type: config.type,
                 cars: [],
                 speed: config.speed || 0,
                 direction: config.direction || 1,
@@ -293,10 +239,9 @@
                 color: config.color
             };
 
-            // Pre-spawn some cars
             if (lane.type === 'road') {
-                const numCars = Math.floor(Math.random() * 2) + 1;
-                for (let i = 0; i < numCars; i++) {
+                var numCars = Math.floor(Math.random() * 2) + 1;
+                for (var j = 0; j < numCars; j++) {
                     lane.cars.push({
                         x: Math.random() * W,
                         width: lane.carWidth * TILE,
@@ -308,74 +253,28 @@
             lanes.push(lane);
         }
 
-        // Reset player position to bottom center
         player.x = Math.floor(COLS / 2);
         player.y = ROWS - 1;
         player.desperationLevel = 0;
-
-        // Set timer based on level
         timeLeft = Math.max(15, 35 - (level - 1) * 3);
     }
 
-    function getLaneConfigs(lvl) {
-        const configs = [];
-        // Row 0: Toilet (goal)
-        configs.push({ row: 0, type: 'safe', color: '#2d6a4f' });
-        // Row 1: safe zone
-        configs.push({ row: 1, type: 'grass', color: '#386641' });
-
-        // Road lanes with increasing difficulty
-        const baseSpeed = 1.2 + (lvl - 1) * 0.3;
-
-        // Block 1: roads
-        configs.push({ row: 2, type: 'road', speed: baseSpeed, direction: 1, spawnRate: 0.008 + lvl * 0.002, carWidth: 2, color: '#333' });
-        configs.push({ row: 3, type: 'road', speed: baseSpeed + 0.5, direction: -1, spawnRate: 0.01 + lvl * 0.002, carWidth: 1.5, color: '#3a3a3a' });
-        configs.push({ row: 4, type: 'road', speed: baseSpeed + 0.3, direction: 1, spawnRate: 0.009 + lvl * 0.002, carWidth: 2.5, color: '#333' });
-
-        // Safe median
-        configs.push({ row: 5, type: 'safe', color: '#4a5568' });
-
-        // Block 2: faster roads
-        configs.push({ row: 6, type: 'road', speed: baseSpeed + 1, direction: -1, spawnRate: 0.012 + lvl * 0.003, carWidth: 2, color: '#3a3a3a' });
-        configs.push({ row: 7, type: 'road', speed: baseSpeed + 0.8, direction: 1, spawnRate: 0.01 + lvl * 0.002, carWidth: 1.5, color: '#333' });
-
-        // Another safe zone
-        configs.push({ row: 8, type: 'grass', color: '#386641' });
-
-        // Block 3: more roads
-        configs.push({ row: 9, type: 'road', speed: baseSpeed + 1.5, direction: -1, spawnRate: 0.015 + lvl * 0.003, carWidth: 2, color: '#3a3a3a' });
-        configs.push({ row: 10, type: 'road', speed: baseSpeed + 0.6, direction: 1, spawnRate: 0.008 + lvl * 0.002, carWidth: 3, color: '#333' });
-
-        // Start zone
-        configs.push({ row: 11, type: 'safe', color: '#4a5568' });
-
-        return configs;
-    }
-
-    function getRandomCarColor() {
-        const colors = ['#e94560', '#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff8c00', '#9b59b6', '#1abc9c'];
-        return colors[Math.floor(Math.random() * colors.length)];
+    function onStartClick() {
+        if (gameState === 'lose') {
+            score = 0;
+            level = 1;
+        }
+        startGame();
     }
 
     function startGame() {
-        try {
-            gameState = 'playing';
-            overlay.classList.add('hidden');
-            particles = [];
-            initLevel();
-            startTimer();
-            if (animFrame) cancelAnimationFrame(animFrame);
-            animFrame = null;
-            gameLoop();
-        } catch (e) {
-            alert('Error starting game: ' + e.message);
-            console.error(e);
-        }
-    }
+        gameState = 'playing';
+        overlay.className = 'hidden';
+        particles = [];
+        initLevel();
 
-    function startTimer() {
         if (timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
+        timerInterval = setInterval(function() {
             if (gameState !== 'playing') return;
             timeLeft -= 1;
             if (timeLeft <= 0) {
@@ -384,15 +283,20 @@
             }
             updateHUD();
         }, 1000);
+
+        if (animFrame) cancelAnimationFrame(animFrame);
+        gameLoop();
     }
 
     function updateHUD() {
         timerDisplay.textContent = timeLeft + 's';
-        timerDisplay.classList.toggle('critical', timeLeft <= 5);
-
-        const urgency = Math.min(100, ((30 - timeLeft) / 30) * 100 + player.desperationLevel * 10);
+        if (timeLeft <= 5) {
+            timerDisplay.style.animation = 'blink 0.3s infinite alternate';
+        } else {
+            timerDisplay.style.animation = '';
+        }
+        var urgency = Math.min(100, ((30 - timeLeft) / 30) * 100 + player.desperationLevel * 10);
         urgencyFill.style.width = urgency + '%';
-
         scoreDisplay.textContent = score;
         levelDisplay.textContent = level;
     }
@@ -401,21 +305,20 @@
         gameState = 'lose';
         if (timerInterval) clearInterval(timerInterval);
 
-        overlay.classList.remove('hidden');
+        overlay.className = '';
         if (reason === 'time') {
             overlayTitle.textContent = 'Too Late!';
-            overlaySubtitle.textContent = 'You didn\'t make it in time...';
+            overlaySubtitle.textContent = "You didn't make it in time...";
             overlayDesc.textContent = 'The situation became... unsalvageable. Those street tacos were a mistake.';
         } else {
             overlayTitle.textContent = 'SPLAT!';
             overlaySubtitle.textContent = 'Hit by a car!';
-            overlayDesc.textContent = 'You got flattened by traffic! At least you don\'t need the toilet anymore...';
+            overlayDesc.textContent = "You got flattened by traffic! At least you don't need the toilet anymore...";
         }
         overlayScore.textContent = 'Final Score: ' + score;
         startBtn.textContent = 'TRY AGAIN';
 
-        // Spawn explosion particles
-        for (let i = 0; i < 30; i++) {
+        for (var i = 0; i < 30; i++) {
             particles.push({
                 x: player.x * TILE + TILE / 2,
                 y: player.y * TILE + TILE / 2,
@@ -432,11 +335,11 @@
         gameState = 'win';
         if (timerInterval) clearInterval(timerInterval);
 
-        const timeBonus = timeLeft * 10;
-        const levelBonus = level * 50;
+        var timeBonus = timeLeft * 10;
+        var levelBonus = level * 50;
         score += timeBonus + levelBonus;
 
-        overlay.classList.remove('hidden');
+        overlay.className = '';
         overlayTitle.textContent = 'SWEET RELIEF!';
         overlaySubtitle.textContent = 'Level ' + level + ' Complete!';
         overlayDesc.textContent = 'You made it to the toilet just in time! The relief is immeasurable. But wait... your stomach is rumbling again!';
@@ -444,11 +347,9 @@
         startBtn.textContent = 'NEXT LEVEL';
         level++;
 
-        // Victory particles
-        for (let i = 0; i < 40; i++) {
+        for (var i = 0; i < 40; i++) {
             particles.push({
-                x: W / 2,
-                y: TILE,
+                x: W / 2, y: TILE,
                 vx: (Math.random() - 0.5) * 10,
                 vy: -Math.random() * 5 - 2,
                 life: 80,
@@ -459,37 +360,26 @@
     }
 
     function movePlayer(dx, dy) {
-        if (gameState !== 'playing') return;
-        if (moveDelay > 0) return;
-
-        const nx = player.x + dx;
-        const ny = player.y + dy;
-
+        if (gameState !== 'playing' || moveDelay > 0) return;
+        var nx = player.x + dx;
+        var ny = player.y + dy;
         if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS) {
             player.x = nx;
             player.y = ny;
             moveDelay = MOVE_COOLDOWN;
-
-            // Check if reached the toilet (row 0)
-            if (player.y === 0) {
-                winLevel();
-            }
-
-            // Increase desperation as player moves
+            if (player.y === 0) winLevel();
             player.desperationLevel = Math.min(10, (ROWS - player.y) / ROWS * 10);
         }
     }
 
     function updateCars() {
-        for (const lane of lanes) {
+        for (var l = 0; l < lanes.length; l++) {
+            var lane = lanes[l];
             if (lane.type !== 'road') continue;
 
-            // Move existing cars
-            for (let i = lane.cars.length - 1; i >= 0; i--) {
-                const car = lane.cars[i];
+            for (var i = lane.cars.length - 1; i >= 0; i--) {
+                var car = lane.cars[i];
                 car.x += lane.speed * lane.direction;
-
-                // Remove off-screen cars
                 if (lane.direction > 0 && car.x > W + car.width) {
                     lane.cars.splice(i, 1);
                 } else if (lane.direction < 0 && car.x + car.width < -car.width) {
@@ -497,19 +387,15 @@
                 }
             }
 
-            // Spawn new cars
             if (Math.random() < lane.spawnRate) {
-                const carW = lane.carWidth * TILE;
-                let x = lane.direction > 0 ? -carW : W + carW;
-
-                // Don't spawn if too close to another car
-                const tooClose = lane.cars.some(c => Math.abs(c.x - x) < carW * 2);
+                var carW = lane.carWidth * TILE;
+                var x = lane.direction > 0 ? -carW : W + carW;
+                var tooClose = false;
+                for (var c = 0; c < lane.cars.length; c++) {
+                    if (Math.abs(lane.cars[c].x - x) < carW * 2) { tooClose = true; break; }
+                }
                 if (!tooClose) {
-                    lane.cars.push({
-                        x: x,
-                        width: carW,
-                        color: getRandomCarColor()
-                    });
+                    lane.cars.push({ x: x, width: carW, color: getRandomCarColor() });
                 }
             }
         }
@@ -517,16 +403,15 @@
 
     function checkCollisions() {
         if (gameState !== 'playing') return;
+        var px = player.x * TILE;
+        var py = player.y * TILE;
+        var ps = TILE - 6;
 
-        const px = player.x * TILE;
-        const py = player.y * TILE;
-        const ps = TILE - 6;
-
-        for (const lane of lanes) {
+        for (var l = 0; l < lanes.length; l++) {
+            var lane = lanes[l];
             if (lane.type !== 'road' || lane.row !== player.y) continue;
-
-            for (const car of lane.cars) {
-                // AABB collision
+            for (var i = 0; i < lane.cars.length; i++) {
+                var car = lane.cars[i];
                 if (px + 3 < car.x + car.width &&
                     px + ps > car.x &&
                     py + 3 < lane.row * TILE + TILE &&
@@ -539,30 +424,28 @@
     }
 
     function updateParticles() {
-        for (let i = particles.length - 1; i >= 0; i--) {
-            const p = particles[i];
+        for (var i = particles.length - 1; i >= 0; i--) {
+            var p = particles[i];
             p.x += p.vx;
             p.y += p.vy;
             p.vy += 0.1;
             p.life--;
-            if (p.life <= 0) {
-                particles.splice(i, 1);
-            }
+            if (p.life <= 0) particles.splice(i, 1);
         }
     }
 
     // ===================== DRAWING =====================
 
     function drawBackground() {
-        for (const lane of lanes) {
-            const y = lane.row * TILE;
+        for (var l = 0; l < lanes.length; l++) {
+            var lane = lanes[l];
+            var y = lane.row * TILE;
 
             ctx.fillStyle = lane.color || '#333';
             ctx.fillRect(0, y, W, TILE);
 
-            // Road markings
             if (lane.type === 'road') {
-                ctx.strokeStyle = 'rgba(255,255,255,0.67)';
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
                 ctx.lineWidth = 1;
                 ctx.setLineDash([15, 15]);
                 ctx.beginPath();
@@ -572,85 +455,89 @@
                 ctx.setLineDash([]);
             }
 
-            // Grass decoration
             if (lane.type === 'grass') {
-                ctx.fillStyle = 'rgba(82,183,136,0.33)';
-                for (let gx = 0; gx < W; gx += 20) {
-                    const gh = 5 + Math.sin(gx * 0.3 + frameCount * 0.05) * 3;
+                ctx.fillStyle = 'rgba(82,183,136,0.4)';
+                for (var gx = 0; gx < W; gx += 20) {
+                    var gh = 5 + Math.sin(gx * 0.3 + frameCount * 0.05) * 3;
                     ctx.fillRect(gx, y + TILE - gh, 3, gh);
                 }
             }
         }
+
+        // Labels
+        ctx.font = '10px Courier New';
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.fillText('START', 10, 11 * TILE + 30);
+        ctx.fillText('MEDIAN', 10, 5 * TILE + 30);
     }
 
     function drawToilet() {
-        const tx = Math.floor(COLS / 2) * TILE;
-        const ty = 0;
+        var tx = Math.floor(COLS / 2) * TILE;
 
-        // Toilet bowl
+        // Bowl
         ctx.fillStyle = '#ffffff';
-        drawRoundRect(tx + 5, ty + 10, 40, 35, 5);
+        drawRoundedRect(tx + 5, 10, 40, 35, 5);
         ctx.fill();
-        ctx.strokeStyle = '#ccc';
+        ctx.strokeStyle = '#cccccc';
         ctx.lineWidth = 2;
         ctx.stroke();
 
         // Tank
         ctx.fillStyle = '#f0f0f0';
-        ctx.fillRect(tx + 10, ty + 2, 30, 12);
-        ctx.strokeStyle = '#ccc';
-        ctx.strokeRect(tx + 10, ty + 2, 30, 12);
+        ctx.fillRect(tx + 10, 2, 30, 12);
+        ctx.strokeStyle = '#cccccc';
+        ctx.strokeRect(tx + 10, 2, 30, 12);
 
         // Seat
         ctx.fillStyle = '#e0e0e0';
-        drawEllipse(tx + 25, ty + 30, 15, 10);
+        drawOval(tx + 25, 30, 15, 10);
         ctx.fill();
-        ctx.strokeStyle = '#bbb';
+        ctx.strokeStyle = '#bbbbbb';
         ctx.stroke();
 
-        // Flush handle
-        ctx.fillStyle = '#999';
-        ctx.fillRect(tx + 38, ty + 5, 8, 3);
+        // Handle
+        ctx.fillStyle = '#999999';
+        ctx.fillRect(tx + 38, 5, 8, 3);
 
-        // Urgency glow
+        // Pulsing glow
         if (gameState === 'playing') {
-            const pulse = Math.sin(frameCount * 0.1) * 0.3 + 0.5;
-            ctx.fillStyle = `rgba(78, 204, 163, ${pulse * 0.3})`;
+            var pulse = Math.sin(frameCount * 0.1) * 0.3 + 0.5;
+            ctx.fillStyle = 'rgba(78, 204, 163, ' + (pulse * 0.3) + ')';
             ctx.beginPath();
-            ctx.arc(tx + 25, ty + 25, 35, 0, Math.PI * 2);
+            ctx.arc(tx + 25, 25, 35, 0, Math.PI * 2);
             ctx.fill();
         }
 
-        // Arrow pointing down to toilet
+        // Arrow
         if (gameState === 'playing' && frameCount % 60 < 40) {
             ctx.fillStyle = '#4ecca3';
             ctx.beginPath();
-            ctx.moveTo(tx + 25, ty + TILE + 5);
-            ctx.lineTo(tx + 15, ty + TILE + 15);
-            ctx.lineTo(tx + 35, ty + TILE + 15);
+            ctx.moveTo(tx + 25, TILE + 5);
+            ctx.lineTo(tx + 15, TILE + 15);
+            ctx.lineTo(tx + 35, TILE + 15);
             ctx.closePath();
             ctx.fill();
         }
     }
 
     function drawCars() {
-        for (const lane of lanes) {
+        for (var l = 0; l < lanes.length; l++) {
+            var lane = lanes[l];
             if (lane.type !== 'road') continue;
 
-            for (const car of lane.cars) {
-                const cy = lane.row * TILE;
-                const carH = TILE - 8;
+            for (var i = 0; i < lane.cars.length; i++) {
+                var car = lane.cars[i];
+                var cy = lane.row * TILE;
+                var carH = TILE - 8;
 
-                // Car body
+                // Body
                 ctx.fillStyle = car.color;
-                drawRoundRect(car.x, cy + 4, car.width, carH, 6);
+                drawRoundedRect(car.x, cy + 4, car.width, carH, 6);
                 ctx.fill();
 
-                // Car roof
+                // Roof
                 ctx.fillStyle = shadeColor(car.color, -30);
-                const roofX = car.x + car.width * 0.2;
-                const roofW = car.width * 0.6;
-                drawRoundRect(roofX, cy + 8, roofW, carH - 12, 4);
+                drawRoundedRect(car.x + car.width * 0.2, cy + 8, car.width * 0.6, carH - 12, 4);
                 ctx.fill();
 
                 // Headlights
@@ -664,7 +551,7 @@
                 }
 
                 // Wheels
-                ctx.fillStyle = '#222';
+                ctx.fillStyle = '#222222';
                 ctx.fillRect(car.x + 8, cy + 2, 10, 5);
                 ctx.fillRect(car.x + 8, cy + carH + 1, 10, 5);
                 ctx.fillRect(car.x + car.width - 18, cy + 2, 10, 5);
@@ -676,19 +563,18 @@
     function drawPlayer() {
         if (gameState === 'lose') return;
 
-        const px = player.x * TILE;
-        const py = player.y * TILE;
+        var px = player.x * TILE;
+        var py = player.y * TILE;
 
-        // Desperation wiggle
-        const wiggleX = gameState === 'playing' ? Math.sin(frameCount * 0.3) * (player.desperationLevel * 0.5) : 0;
-        const wiggleY = gameState === 'playing' ? Math.cos(frameCount * 0.4) * (player.desperationLevel * 0.3) : 0;
+        var wiggleX = gameState === 'playing' ? Math.sin(frameCount * 0.3) * (player.desperationLevel * 0.5) : 0;
+        var wiggleY = gameState === 'playing' ? Math.cos(frameCount * 0.4) * (player.desperationLevel * 0.3) : 0;
 
-        const cx = px + TILE / 2 + wiggleX;
-        const cy = py + TILE / 2 + wiggleY;
+        var cx = px + TILE / 2 + wiggleX;
+        var cy = py + TILE / 2 + wiggleY;
 
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        drawEllipse(cx, cy + 18, 14, 5);
+        drawOval(cx, cy + 18, 14, 5);
         ctx.fill();
 
         // Body
@@ -704,30 +590,29 @@
         ctx.fill();
 
         // Eyes
-        ctx.fillStyle = '#333';
+        ctx.fillStyle = '#333333';
         ctx.beginPath();
         ctx.arc(cx - 4, cy - 12, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
         ctx.arc(cx + 4, cy - 12, 2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Mouth expression based on desperation
-        ctx.strokeStyle = '#333';
+        // Mouth
+        ctx.strokeStyle = '#333333';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         if (player.desperationLevel > 7) {
-            // Panic face
             ctx.arc(cx, cy - 6, 4, 0, Math.PI * 2);
         } else if (player.desperationLevel > 4) {
-            // Worried
             ctx.arc(cx, cy - 4, 3, Math.PI, 0);
         } else {
-            // Determined
             ctx.moveTo(cx - 3, cy - 6);
             ctx.lineTo(cx + 3, cy - 6);
         }
         ctx.stroke();
 
-        // Sweat drops when desperate
+        // Sweat
         if (player.desperationLevel > 3 && frameCount % 20 < 15) {
             ctx.fillStyle = '#74b9ff';
             ctx.beginPath();
@@ -735,14 +620,15 @@
             ctx.fill();
         }
 
-        // Knees-together stance when very desperate
+        // Desperate legs
         if (player.desperationLevel > 6) {
             ctx.strokeStyle = '#4ecca3';
             ctx.lineWidth = 3;
-            // Legs close together
             ctx.beginPath();
             ctx.moveTo(cx - 3, cy + 14);
             ctx.lineTo(cx - 1, cy + 22);
+            ctx.stroke();
+            ctx.beginPath();
             ctx.moveTo(cx + 3, cy + 14);
             ctx.lineTo(cx + 1, cy + 22);
             ctx.stroke();
@@ -750,7 +636,8 @@
     }
 
     function drawParticles() {
-        for (const p of particles) {
+        for (var i = 0; i < particles.length; i++) {
+            var p = particles[i];
             ctx.globalAlpha = p.life / 80;
             ctx.fillStyle = p.color;
             ctx.beginPath();
@@ -760,94 +647,49 @@
         ctx.globalAlpha = 1;
     }
 
-    function drawSafeZoneLabels() {
-        ctx.font = '10px Courier New';
-        ctx.fillStyle = 'rgba(255,255,255,0.33)';
-
-        for (const lane of lanes) {
-            if (lane.type === 'safe' && lane.row === ROWS - 1) {
-                ctx.fillText('START', 10, lane.row * TILE + 30);
-            }
-            if (lane.type === 'safe' && lane.row === 5) {
-                ctx.fillText('MEDIAN', 10, lane.row * TILE + 30);
-            }
-        }
-    }
-
-    function shadeColor(color, percent) {
-        const num = parseInt(color.replace('#', ''), 16);
-        const amt = Math.round(2.55 * percent);
-        const R = Math.max(0, Math.min(255, (num >> 16) + amt));
-        const G = Math.max(0, Math.min(255, (num >> 8 & 0x00FF) + amt));
-        const B = Math.max(0, Math.min(255, (num & 0x0000FF) + amt));
-        return `rgb(${R},${G},${B})`;
-    }
-
     // ===================== GAME LOOP =====================
 
     function gameLoop() {
-        try {
-            frameCount++;
+        frameCount++;
+        if (moveDelay > 0) moveDelay--;
 
-            // Handle input
-            if (moveDelay > 0) moveDelay--;
+        if (gameState === 'playing') {
+            if (keys['ArrowUp'] || keys['KeyW']) movePlayer(0, -1);
+            else if (keys['ArrowDown'] || keys['KeyS']) movePlayer(0, 1);
+            else if (keys['ArrowLeft'] || keys['KeyA']) movePlayer(-1, 0);
+            else if (keys['ArrowRight'] || keys['KeyD']) movePlayer(1, 0);
 
-            if (gameState === 'playing') {
-                if (keys['ArrowUp'] || keys['KeyW']) movePlayer(0, -1);
-                else if (keys['ArrowDown'] || keys['KeyS']) movePlayer(0, 1);
-                else if (keys['ArrowLeft'] || keys['KeyA']) movePlayer(-1, 0);
-                else if (keys['ArrowRight'] || keys['KeyD']) movePlayer(1, 0);
-
-                updateCars();
-                checkCollisions();
-            }
-
-            updateParticles();
-
-            // Draw
-            ctx.clearRect(0, 0, W, H);
-            drawBackground();
-            drawToilet();
-            drawSafeZoneLabels();
-            drawCars();
-            drawPlayer();
-            drawParticles();
-
-            updateHUD();
-
-            animFrame = requestAnimationFrame(gameLoop);
-        } catch (e) {
-            console.error('Game loop error:', e);
-            alert('Game error: ' + e.message);
+            updateCars();
+            checkCollisions();
         }
+
+        updateParticles();
+
+        ctx.clearRect(0, 0, W, H);
+        drawBackground();
+        drawToilet();
+        drawCars();
+        drawPlayer();
+        drawParticles();
+        updateHUD();
+
+        animFrame = requestAnimationFrame(gameLoop);
     }
 
     // ===================== INPUT =====================
 
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', function(e) {
         keys[e.code] = true;
-
-        // Prevent scrolling with arrow keys
-        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+        if (e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'Space') {
             e.preventDefault();
         }
-
-        // Quick restart
         if (e.code === 'Space' && gameState !== 'playing') {
-            startBtn.click();
+            onStartClick();
         }
     });
 
-    document.addEventListener('keyup', (e) => {
+    document.addEventListener('keyup', function(e) {
         keys[e.code] = false;
-    });
-
-    startBtn.addEventListener('click', () => {
-        if (gameState === 'lose') {
-            score = 0;
-            level = 1;
-        }
-        startGame();
     });
 
     // Initial HUD
