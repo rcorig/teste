@@ -218,6 +218,16 @@
         ctx.arcTo(x, y, x + r, y, r);
         ctx.closePath();
     }
+
+    // Polyfill for ellipse (not supported in all browsers)
+    function drawEllipse(cx, cy, rx, ry) {
+        ctx.beginPath();
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(1, ry / rx);
+        ctx.arc(0, 0, rx, 0, Math.PI * 2);
+        ctx.restore();
+    }
     const overlay = document.getElementById('overlay');
     const overlayTitle = document.getElementById('overlayTitle');
     const overlaySubtitle = document.getElementById('overlaySubtitle');
@@ -348,12 +358,19 @@
     }
 
     function startGame() {
-        gameState = 'playing';
-        overlay.classList.add('hidden');
-        initLevel();
-        startTimer();
-        if (animFrame) cancelAnimationFrame(animFrame);
-        gameLoop();
+        try {
+            gameState = 'playing';
+            overlay.classList.add('hidden');
+            particles = [];
+            initLevel();
+            startTimer();
+            if (animFrame) cancelAnimationFrame(animFrame);
+            animFrame = null;
+            gameLoop();
+        } catch (e) {
+            alert('Error starting game: ' + e.message);
+            console.error(e);
+        }
     }
 
     function startTimer() {
@@ -586,8 +603,7 @@
 
         // Seat
         ctx.fillStyle = '#e0e0e0';
-        ctx.beginPath();
-        ctx.ellipse(tx + 25, ty + 30, 15, 10, 0, 0, Math.PI * 2);
+        drawEllipse(tx + 25, ty + 30, 15, 10);
         ctx.fill();
         ctx.strokeStyle = '#bbb';
         ctx.stroke();
@@ -672,8 +688,7 @@
 
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.beginPath();
-        ctx.ellipse(cx, cy + 18, 14, 5, 0, 0, Math.PI * 2);
+        drawEllipse(cx, cy + 18, 14, 5);
         ctx.fill();
 
         // Body
@@ -771,35 +786,40 @@
     // ===================== GAME LOOP =====================
 
     function gameLoop() {
-        frameCount++;
+        try {
+            frameCount++;
 
-        // Handle input
-        if (moveDelay > 0) moveDelay--;
+            // Handle input
+            if (moveDelay > 0) moveDelay--;
 
-        if (gameState === 'playing') {
-            if (keys['ArrowUp'] || keys['KeyW']) movePlayer(0, -1);
-            else if (keys['ArrowDown'] || keys['KeyS']) movePlayer(0, 1);
-            else if (keys['ArrowLeft'] || keys['KeyA']) movePlayer(-1, 0);
-            else if (keys['ArrowRight'] || keys['KeyD']) movePlayer(1, 0);
+            if (gameState === 'playing') {
+                if (keys['ArrowUp'] || keys['KeyW']) movePlayer(0, -1);
+                else if (keys['ArrowDown'] || keys['KeyS']) movePlayer(0, 1);
+                else if (keys['ArrowLeft'] || keys['KeyA']) movePlayer(-1, 0);
+                else if (keys['ArrowRight'] || keys['KeyD']) movePlayer(1, 0);
 
-            updateCars();
-            checkCollisions();
+                updateCars();
+                checkCollisions();
+            }
+
+            updateParticles();
+
+            // Draw
+            ctx.clearRect(0, 0, W, H);
+            drawBackground();
+            drawToilet();
+            drawSafeZoneLabels();
+            drawCars();
+            drawPlayer();
+            drawParticles();
+
+            updateHUD();
+
+            animFrame = requestAnimationFrame(gameLoop);
+        } catch (e) {
+            console.error('Game loop error:', e);
+            alert('Game error: ' + e.message);
         }
-
-        updateParticles();
-
-        // Draw
-        ctx.clearRect(0, 0, W, H);
-        drawBackground();
-        drawToilet();
-        drawSafeZoneLabels();
-        drawCars();
-        drawPlayer();
-        drawParticles();
-
-        updateHUD();
-
-        animFrame = requestAnimationFrame(gameLoop);
     }
 
     // ===================== INPUT =====================
