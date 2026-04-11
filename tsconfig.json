@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "ES2016",
+    "strict": true,
+    "sourceMap": false
+  },
+  "files": ["tic-tac-toe.ts"]
+}

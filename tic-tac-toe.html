@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0f0f1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #eee;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #e94560, #4d96ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .scoreboard {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1rem 0;
+            font-size: 1.1rem;
+        }
+
+        .score-item {
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            background: #1a1a2e;
+            border: 2px solid #333;
+        }
+
+        .score-item.x-score { border-color: #e94560; }
+        .score-item.o-score { border-color: #4d96ff; }
+        .score-item.draw-score { border-color: #888; }
+
+        .score-item span {
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .score-item.x-score span { color: #e94560; }
+        .score-item.o-score span { color: #4d96ff; }
+        .score-item.draw-score span { color: #888; }
+
+        .status {
+            font-size: 1.4rem;
+            margin: 1rem 0;
+            min-height: 2rem;
+            transition: color 0.3s;
+        }
+
+        .status.winner-text { color: #4ecca3; font-weight: bold; }
+        .status.draw-text { color: #e9d962; }
+
+        .turn-indicator {
+            display: inline-block;
+            font-size: 1.6rem;
+            font-weight: bold;
+            width: 2rem;
+            height: 2rem;
+            line-height: 2rem;
+            border-radius: 50%;
+            margin-bottom: 0.5rem;
+        }
+
+        .turn-indicator.x { color: #e94560; }
+        .turn-indicator.o { color: #4d96ff; }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            width: 360px;
+            height: 360px;
+            margin: 0 auto;
+            background: #2a2a40;
+            padding: 6px;
+            border-radius: 12px;
+        }
+
+        .cell {
+            background: #1a1a2e;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            user-select: none;
+        }
+
+        .cell:hover:not(.disabled):not(.x):not(.o) {
+            background: #252540;
+            transform: scale(1.03);
+        }
+
+        .cell:active:not(.disabled):not(.x):not(.o) {
+            transform: scale(0.97);
+        }
+
+        .cell.x { color: #e94560; }
+        .cell.o { color: #4d96ff; }
+
+        .cell.disabled {
+            cursor: default;
+        }
+
+        .cell.winning {
+            animation: glow 0.6s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { background: #1a1a2e; }
+            to { background: rgba(78, 204, 163, 0.25); }
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            padding: 0.6rem 1.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+            border: 2px solid #e94560;
+            background: transparent;
+            color: #e94560;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #e94560;
+            color: white;
+        }
+
+        #reset-scores-btn {
+            border-color: #666;
+            color: #666;
+        }
+
+        #reset-scores-btn:hover {
+            background: #666;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tic-Tac-Toe</h1>
+
+        <div class="scoreboard">
+            <div class="score-item x-score">X: <span id="score-x">0</span></div>
+            <div class="score-item draw-score">Draws: <span id="score-draws">0</span></div>
+            <div class="score-item o-score">O: <span id="score-o">0</span></div>
+        </div>
+
+        <div id="turn-indicator" class="turn-indicator x">X</div>
+        <div id="status" class="status">Player X's turn</div>
+
+        <div id="board"></div>
+
+        <div class="buttons">
+            <button id="reset-btn">New Game</button>
+            <button id="reset-scores-btn">Reset Scores</button>
+        </div>
+    </div>
+
+    <script src="tic-tac-toe.js"></script>
+</body>
+</html>
