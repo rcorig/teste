@@ -180,7 +180,17 @@
         <div id="turn-indicator" class="turn-indicator x">X</div>
         <div id="status" class="status">Player X's turn</div>
 
-        <div id="board"></div>
+        <div id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
 
         <div class="buttons">
             <button id="reset-btn">New Game</button>
@@ -276,19 +286,15 @@ function resetScores() {
     resetGame();
 }
 function init() {
-    const board = document.getElementById("board");
-    board.innerHTML = "";
-    for (let i = 0; i < 9; i++) {
-        const cell = document.createElement("div");
-        cell.className = "cell";
-        cell.addEventListener("click", () => handleCellClick(i));
-        board.appendChild(cell);
-    }
+    const cells = document.querySelectorAll(".cell");
+    cells.forEach((cell, i) => {
+        cell.addEventListener("click", function () { handleCellClick(i); });
+    });
     document.getElementById("reset-btn").addEventListener("click", resetGame);
     document.getElementById("reset-scores-btn").addEventListener("click", resetScores);
     renderBoard();
 }
-document.addEventListener("DOMContentLoaded", init);
+init();
     </script>
 </body>
 </html>
