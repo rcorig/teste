@@ -28,6 +28,10 @@ Photos land in `./gallery/` named `0001_<original>.jpg`, `0002_…`, etc.
 | `--output DIR` | Change output folder (default `./gallery`) |
 | `--headed` | Show the Chromium window — useful if the site throws a captcha or the login selectors drift |
 | `--timeout SECS` | Per-page navigation timeout (default 60) |
+| `--no-zip` | Skip creating `<output>.zip` at the end |
+
+When the run finishes you'll get both `gallery/` and `gallery.zip` — the zip is
+what you want to right-click → **Download** from a Codespace on iPad.
 
 ## How it works
 

@@ -21,6 +21,7 @@ import argparse
 import asyncio
 import os
 import re
+import shutil
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
@@ -168,6 +169,11 @@ async def main() -> int:
     parser.add_argument("--output", default="gallery")
     parser.add_argument("--headed", action="store_true")
     parser.add_argument("--timeout", type=int, default=60)
+    parser.add_argument(
+        "--no-zip",
+        action="store_true",
+        help="Skip creating <output>.zip at the end",
+    )
     args = parser.parse_args()
 
     email = os.environ.get("PROOF_EMAIL")
@@ -198,8 +204,14 @@ async def main() -> int:
         cookies = await context.cookies()
         await browser.close()
 
-    await download_all(urls, Path(args.output), cookies)
-    print(f"done. files saved to {args.output}/")
+    out_dir = Path(args.output)
+    await download_all(urls, out_dir, cookies)
+    print(f"done. files saved to {out_dir}/")
+
+    if not args.no_zip:
+        archive = shutil.make_archive(str(out_dir), "zip", root_dir=out_dir)
+        size_mb = Path(archive).stat().st_size / (1024 * 1024)
+        print(f"-> zipped -> {archive} ({size_mb:.1f} MB)")
     return 0
 
 
