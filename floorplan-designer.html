@@ -67,6 +67,8 @@ main{position:relative;overflow:hidden;background:var(--paper)}
 #plan.tool-select .room:hover{opacity:.82}
 #plan .furn{cursor:move}
 @media (hover:hover){#plan .furn:hover{filter:drop-shadow(0 0 2px rgba(181,101,58,.7))}}
+#plan.tool-demolish .furn{cursor:pointer}
+@media (hover:hover){#plan.tool-demolish .furn:hover{filter:drop-shadow(0 0 3px rgba(198,91,58,.95)) saturate(.6)}}
 [data-handle]{cursor:pointer}
 [data-handle=size]{cursor:nwse-resize}
 .scalebar{position:absolute;left:14px;bottom:12px;background:rgba(255,253,249,.92);border:1px solid var(--line);
@@ -1035,11 +1037,11 @@ function overviewPanel(){
   </div></section>`) : ''}
   ${tr(`<section><h3>键盘快捷键</h3><div class="kbd">
     <kbd>拖拽</kbd><span>左侧家具拖入平面图</span><kbd>V</kbd><span>选择 / 移动</span><kbd>M</kbd><span>测量（Shift 水平/垂直）</span>
-    <kbd>X</kbd><span>拆除墙段（拖动只拆一部分）</span><kbd>C</kbd><span>切割墙段</span><kbd>W</kbd><span>新建墙体</span><kbd>D</kbd><span>添加 / 删除门</span><kbd>R</kbd><span>旋转 90°（Shift 反向）</span><kbd>方向键</kbd><span>微调 10mm（Shift 100mm）</span>
+    <kbd>X</kbd><span>拆改：删除家具、拆除墙段（拖动只拆一部分）</span><kbd>C</kbd><span>切割墙段</span><kbd>W</kbd><span>新建墙体</span><kbd>D</kbd><span>添加 / 删除门</span><kbd>R</kbd><span>旋转 90°（Shift 反向）</span><kbd>方向键</kbd><span>微调 10mm（Shift 100mm）</span>
     <kbd>⌘/Ctrl D</kbd><span>复制</span><kbd>Delete</kbd><span>删除</span><kbd>⌘/Ctrl Z</kbd><span>撤销</span><kbd>T</kbd><span>切换 2D / 3D</span><kbd>F</kbd><span>适应窗口</span><kbd>Esc</kbd><span>取消选择</span>
   </div></section>`, `<section><h3>Keyboard Shortcuts</h3><div class="kbd">
     <kbd>Drag</kbd><span>Drag furniture onto the plan</span><kbd>V</kbd><span>Select / move</span><kbd>M</kbd><span>Measure (Shift: horizontal/vertical)</span>
-    <kbd>X</kbd><span>Remove wall sections (drag for part of a wall)</span><kbd>C</kbd><span>Cut a wall into sections</span><kbd>W</kbd><span>Draw a new wall</span><kbd>D</kbd><span>Add / remove doors</span><kbd>R</kbd><span>Rotate 90° (Shift reverses)</span><kbd>Arrows</kbd><span>Nudge 10mm (Shift 100mm)</span>
+    <kbd>X</kbd><span>Demolish: delete furniture, remove wall sections (drag for part of a wall)</span><kbd>C</kbd><span>Cut a wall into sections</span><kbd>W</kbd><span>Draw a new wall</span><kbd>D</kbd><span>Add / remove doors</span><kbd>R</kbd><span>Rotate 90° (Shift reverses)</span><kbd>Arrows</kbd><span>Nudge 10mm (Shift 100mm)</span>
     <kbd>⌘/Ctrl D</kbd><span>Duplicate</span><kbd>Delete</kbd><span>Delete</span><kbd>⌘/Ctrl Z</kbd><span>Undo</span><kbd>T</kbd><span>Toggle 2D / 3D</span><kbd>F</kbd><span>Fit to window</span><kbd>Esc</kbd><span>Deselect</span>
   </div></section>`)}`;
 }
@@ -1199,7 +1201,13 @@ function bindFurnPanel(f){
 /* ======================= 操作 ======================= */
 function select(sel){ ui.sel = sel; renderSel(); renderPanel(); }
 function rotateSel(d){ if (ui.sel?.kind==='furn') mutate(() => { const f = getF(ui.sel.id); f.rot = norm(f.rot + d); }); }
-function deleteSel(){ if (ui.sel?.kind==='wall') return toggleWall(ui.sel.id); if (ui.sel?.kind==='furn'){ const id = ui.sel.id; ui.sel = null; mutate(() => state.furniture = state.furniture.filter(f => f.id !== id)); } }
+function deleteFurn(id){
+  const f = getF(id); if (!f) return;
+  if (ui.sel?.id === id) ui.sel = null;
+  mutate(() => state.furniture = state.furniture.filter(g => g.id !== id));
+  toast(tr(`已删除「${nm(f.name)}」，可撤销`, `Deleted "${nm(f.name)}" — Undo to restore`));
+}
+function deleteSel(){ if (ui.sel?.kind==='wall') return toggleWall(ui.sel.id); if (ui.sel?.kind==='furn') deleteFurn(ui.sel.id); }
 function duplicateSel(){
   if (ui.sel?.kind !== 'furn') return;
   const f = getF(ui.sel.id), n = {...f, id:uid(), cx:f.cx+200, cy:f.cy+200};
@@ -1358,7 +1366,7 @@ function syncModeHint(){
   const hints = {select:'',
     measure:COARSE ? tr('按住拖出测量线，或依次点两点 · 靠近墙面自动吸附 · 点「选择」退出', 'Hold and drag a line, or tap two points · snaps to walls · tap "Select" to exit')
       : tr('点击两点（或按住拖动）测量距离 · 靠近墙面自动吸附 · Shift 锁定水平/垂直 · Esc 取消', 'Click two points (or drag) to measure · snaps to walls · Shift locks horizontal/vertical · Esc cancels'),
-    demolish:tr('点击墙段拆除，再次点击恢复 · 沿墙拖动只拆除拖过的部分 · 承重墙段不可拆', 'Click a wall section to remove it, click again to restore · drag along a wall to remove just that stretch · load-bearing sections cannot be removed'),
+    demolish:tr('点击家具删除 · 点击墙段拆除，再次点击恢复 · 沿墙拖动只拆除拖过的部分 · 承重墙段不可拆', 'Click furniture to delete it · click a wall section to remove it, click again to restore · drag along a wall to remove just that stretch · load-bearing sections cannot be removed'),
     cut:tr('在墙上点击两点，切出中间的墙段 · Esc 取消', 'Click two points on a wall to split off the section between them · Esc cancels'),
     wall:tr('点击起点、再点终点画墙（水平 / 垂直，吸附网格和墙线）· 可连续绘制 · Esc 结束', 'Click a start point, then an end point (horizontal / vertical, snaps to grid and wall lines) · keeps chaining · Esc stops'),
     door:tr('点击墙体添加门（向点击一侧开）· 点击已有的门删除 · Shift+点击翻转方向', 'Click a wall to add a door (swings toward the side you click) · click a door to remove it · Shift+click flips its swing')};
@@ -1490,6 +1498,8 @@ svg.addEventListener('pointerdown', e => {
   const h = t.closest('[data-handle]');
   if (h && ui.sel?.kind === 'furn'){
     drag = {kind:h.dataset.handle, id:ui.sel.id, sx:e.clientX, sy:e.clientY, before:snap(), moved:false};
+  } else if (ui.tool === 'demolish' && t.closest('[data-fid]')){
+    deleteFurn(t.closest('[data-fid]').dataset.fid); return;
   } else if (ui.tool === 'demolish' && wallHit(p, true)){
     const w = wallHit(p, true);                // click: whole section · drag along the wall: just that stretch
     drag = {kind:'demo', wid:w.id, u0:cutPoint(w, p), sx:e.clientX, sy:e.clientY, moved:false};
