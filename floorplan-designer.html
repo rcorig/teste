@@ -906,10 +906,11 @@ function renderMeasure(){
   if (ui.mA) s += `<circle cx="${ui.mA.x}" cy="${ui.mA.y}" r="${3*k}" fill="#2f5d62"/>`;
   // wall tool: the wall being drawn
   if (ui.tool === 'wall' && ui.wA){
-    const a = ui.wA, b = ui.wCur || a, h = NEW_WALL_T/2, hz = a.y === b.y;
+    const a = ui.wA, b = ui.wType ? typedEnd(a, ui.wCur || a, +ui.wType) : ui.wCur || a, h = NEW_WALL_T/2, hz = a.y === b.y;
     const r = hz ? [Math.min(a.x,b.x)-h, a.y-h, Math.max(a.x,b.x)+h, a.y+h] : [a.x-h, Math.min(a.y,b.y)-h, a.x+h, Math.max(a.y,b.y)+h];
     s += `<rect x="${r[0]}" y="${r[1]}" width="${r[2]-r[0]}" height="${r[3]-r[1]}" fill="#2f5d62" fill-opacity=".35" stroke="#2f5d62" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
     s += one(a, b, true) + `<circle cx="${a.x}" cy="${a.y}" r="${3*k}" fill="#2f5d62"/>`;
+    if (ui.wType) s += `<text x="${b.x + 12*k}" y="${b.y - 12*k}" font-size="${13*k}" fill="#2f5d62" font-weight="700" stroke="#fff" stroke-width="${3.5*k}" paint-order="stroke">${ui.wType} mm · ${tr('回车确认', 'Enter')} ↵</text>`;
   }
   // cut tool / demolish drag: the stretch of wall that will be split off (teal) or removed (red)
   if (ui.cHover){
@@ -1136,7 +1137,12 @@ function wallPanel(w){
     <div class="stats"><div><small>${tr('长度','Length')}</small><span class="big">${wlen(w)}</span> mm</div>
       <div><small>${tr('门窗','Doors & windows')}</small><span class="big">${w.ops.length}</span></div></div>
     <div class="form">
+      <label>${tr('长度','Length')} (mm)<input type="number" id="wL" value="${wlen(w)}" min="100" max="30000" step="10"></label>
       <label>${tr('厚度','Thickness')} (mm)<input type="number" id="wT" value="${w.t}" min="50" max="600" step="10"></label>
+      <label>${tr('改长度时','When changing length')}<select id="wAnchor">${(w.y1 === w.y2
+        ? [['a', tr('左端不动','Keep left end')], ['b', tr('右端不动','Keep right end')]]
+        : [['a', tr('上端不动','Keep top end')], ['b', tr('下端不动','Keep bottom end')]]).concat([['c', tr('中心不动','Keep centre')]])
+        .map(([v, t]) => `<option value="${v}" ${ui.wAnchor === v ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
       <label>${tr('外墙','Exterior wall')}<select id="wExt"><option value="0">${tr('否','No')}</option><option value="1" ${w.ext ? 'selected' : ''}>${tr('是','Yes')}</option></select></label>
     </div></section>
   <section><h3>${tr('结构','Structure')}</h3><div class="mats">
@@ -1152,6 +1158,12 @@ function wallPanel(w){
 }
 function bindWallPanel(w){
   const upd = fn => mutate(() => { const g = state.walls.find(x => x.id === w.id); if (g) fn(g); });
+  $('#wAnchor').onchange = e => ui.wAnchor = e.target.value;
+  $('#wL').onchange = e => {
+    const v = Math.round(parseFloat(e.target.value)/10)*10;
+    if (isNaN(v) || v < 100) return toast(tr('墙段至少 100 mm', 'A wall section needs to be at least 100 mm long'));
+    setWallLength(w.id, Math.min(30000, v), ui.wAnchor || 'a');
+  };
   $('#wT').onchange = e => { const v = parseFloat(e.target.value); if (!isNaN(v)) upd(g => g.t = Math.max(50, Math.min(600, Math.round(v/10)*10))); };
   $('#wExt').onchange = e => upd(g => g.ext = e.target.value === '1');
   document.querySelectorAll('#panel [data-wk]').forEach(b => b.onclick = () => upd(g => {
@@ -1317,6 +1329,25 @@ function snapWall(p, a){
   }
   return {x, y};
 }
+// End point of a wall of length L from a, pointing the way the pointer (cur) points from a
+function typedEnd(a, cur, L){
+  const dx = cur.x - a.x, dy = cur.y - a.y;
+  return Math.abs(dx) >= Math.abs(dy) ? {x:a.x + (dx < 0 ? -L : L), y:a.y} : {x:a.x, y:a.y + (dy < 0 ? -L : L)};
+}
+// Change a section's length, keeping one end ('a' = left / top, 'b' = right / bottom) or the centre ('c') in place
+function setWallLength(id, L, anchor){
+  let dropped = 0;
+  mutate(() => {
+    const w = state.walls.find(x => x.id === id); if (!w) return;
+    const hz = w.y1 === w.y2, [a, b] = wallSpan(w);
+    const lo = anchor === 'b' ? b - L : anchor === 'c' ? Math.round((a + b - L)/20)*10 : a, hi = lo + L;
+    if (hz){ w.x1 = lo; w.x2 = hi; } else { w.y1 = lo; w.y2 = hi; }
+    const keep = w.ops.filter(o => o.at - o.w/2 >= lo && o.at + o.w/2 <= hi);
+    dropped = w.ops.length - keep.length; w.ops = keep;
+  });
+  toast(dropped ? tr(`长度改为 ${L} mm，移除了 ${dropped} 个放不下的门窗`, `Length set to ${L} mm — removed ${dropped} door/window that no longer fit`)
+                : tr(`长度改为 ${L} mm`, `Length set to ${L} mm`));
+}
 function addWall(a, b){
   mutate(() => state.walls.push(normWall({id:wid('u'), x1:a.x, y1:a.y, x2:b.x, y2:b.y, t:NEW_WALL_T, k:'n', user:true, ops:[]})));
   toast(tr(`已新建 ${wlen({x1:a.x,y1:a.y,x2:b.x,y2:b.y})} mm 墙体`, `Added a ${wlen({x1:a.x,y1:a.y,x2:b.x,y2:b.y})} mm wall`));
@@ -1356,7 +1387,7 @@ function doorClick(p, flip){
 }
 
 function setTool(t){
-  ui.tool = t; ui.mA = null; ui.mCur = null; ui.wA = null; ui.wCur = null; ui.dHover = null; ui.cA = null; ui.cHover = null; ui.cutWall = null;
+  ui.tool = t; ui.mA = null; ui.mCur = null; ui.wType = ''; ui.wA = null; ui.wCur = null; ui.dHover = null; ui.cA = null; ui.cHover = null; ui.cutWall = null;
   svg.setAttribute('class', 'tool-' + t);
   document.querySelectorAll('#tools .btn').forEach(b => b.classList.toggle('on', b.dataset.tool === t));
   syncModeHint();
@@ -1368,7 +1399,7 @@ function syncModeHint(){
       : tr('点击两点（或按住拖动）测量距离 · 靠近墙面自动吸附 · Shift 锁定水平/垂直 · Esc 取消', 'Click two points (or drag) to measure · snaps to walls · Shift locks horizontal/vertical · Esc cancels'),
     demolish:tr('点击家具删除 · 点击墙段拆除，再次点击恢复 · 沿墙拖动只拆除拖过的部分 · 承重墙段不可拆', 'Click furniture to delete it · click a wall section to remove it, click again to restore · drag along a wall to remove just that stretch · load-bearing sections cannot be removed'),
     cut:tr('在墙上点击两点，切出中间的墙段 · Esc 取消', 'Click two points on a wall to split off the section between them · Esc cancels'),
-    wall:tr('点击起点、再点终点画墙（水平 / 垂直，吸附网格和墙线）· 可连续绘制 · Esc 结束', 'Click a start point, then an end point (horizontal / vertical, snaps to grid and wall lines) · keeps chaining · Esc stops'),
+    wall:tr('点击起点、再点终点画墙，或输入长度 (mm) 后按回车（水平 / 垂直，吸附网格和墙线）· 可连续绘制 · Esc 结束', 'Click a start point, then an end point, or type a length in mm and press Enter · horizontal / vertical, snaps to grid and wall lines · keeps chaining · Esc stops'),
     door:tr('点击墙体添加门（向点击一侧开）· 点击已有的门删除 · Shift+点击翻转方向', 'Click a wall to add a door (swings toward the side you click) · click a door to remove it · Shift+click flips its swing')};
   const h = $('#modehint'); h.textContent = hints[ui.tool]; h.classList.toggle('show', !!hints[ui.tool]);
 }
@@ -1528,7 +1559,7 @@ svg.addEventListener('pointermove', e => {
   $('#cx').textContent = Math.round(p.x) + ' mm'; $('#cy').textContent = Math.round(p.y) + ' mm';
   if (!drag){
     const room = e.target.closest && e.target.closest('[data-room]');
-    $('#hover').innerHTML = room ? `<b>${esc(state.rooms[room.dataset.room].name)}</b> ${fmt(area(ROOMS.find(r=>r.id===room.dataset.room).poly))} m²` : '';
+    $('#hover').innerHTML = room ? `<b>${esc(nm(state.rooms[room.dataset.room].name))}</b> ${fmt(area(ROOMS.find(r=>r.id===room.dataset.room).poly))} m²` : '';
     if (ui.tool === 'measure' && ui.mA){ ui.mCur = snapPoint(p, e.shiftKey); renderMeasure(); }
     if (ui.tool === 'wall' && ui.wA){ ui.wCur = snapWall(p, ui.wA); renderMeasure(); }
     if (ui.tool === 'door'){ ui.dHover = doorCandidate(p); renderMeasure(); }
@@ -1601,6 +1632,19 @@ document.addEventListener('keydown', e => {
   if (e.target.matches('input,select,textarea')) return;
   if (window.View3D?.walking()) return;
   const mod = e.metaKey || e.ctrlKey, k = e.key.toLowerCase();
+  // Add wall: after the first click, type a length in mm and press Enter
+  if (!mod && !is3D() && ui.tool === 'wall' && ui.wA){
+    if (/^[0-9]$/.test(k) && (ui.wType || '').length < 5){ e.preventDefault(); ui.wType = (ui.wType || '') + k; renderMeasure(); return; }
+    if (k === 'backspace' && ui.wType){ e.preventDefault(); ui.wType = ui.wType.slice(0, -1); renderMeasure(); return; }
+    if (k === 'escape' && ui.wType){ ui.wType = ''; renderMeasure(); return; }
+    if (k === 'enter' && ui.wType){
+      e.preventDefault();
+      const L = +ui.wType; ui.wType = '';
+      if (L < 300){ renderMeasure(); return toast(tr('墙体至少 300 mm 长', 'A wall needs to be at least 300 mm long')); }
+      const a = ui.wA, b = typedEnd(a, ui.wCur || a, L);
+      ui.wA = b; ui.wCur = b; addWall(a, b); renderMeasure(); return;
+    }
+  }
   if (mod && k === 'z'){ e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
   if (mod && k === 'y'){ e.preventDefault(); redo(); return; }
   if (mod && k === 'd'){ e.preventDefault(); duplicateSel(); return; }
